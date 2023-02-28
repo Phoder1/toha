@@ -1,27 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ .Site.Language.Lang }}">
   <head>
     <title>{{ .Page.Title }}</title>
     <!------ ADD COMMON HEADERS -------->
     {{- partial "header.html" . -}}
     {{ template "_internal/opengraph.html" . }}
-
+    {{ template "_internal/twitter_cards.html" . }}
     <!------ ADD PAGE SPECIFIC HEADERS ------->
     {{ block "header" . }} {{ end }}
 
-    <!-- ADD GOOGLE ANALYTICS IF ENABLED -->
-    {{ if site.GoogleAnalytics }}
-        <!-- Google Analytics v3  ID -->
-        {{ if hasPrefix site.GoogleAnalytics "UA-"}}
-          {{ template "_internal/google_analytics_async.html" . }}
-        {{ else }}
-          <!-- Google Analytics v4  ID -->
-          {{ template "_internal/google_analytics.html" . }}
-        {{ end }}
-    {{ end }}
+    <!--================= add analytics if enabled =========================-->
+    {{- partial "analytics.html" . -}}
+
   </head>
 
-  <body data-spy="scroll" data-target="#TableOfContents" data-offset="80">
+  <body class="type-{{ .Page.Type }} kind-{{ .Page.Kind }}" data-spy="scroll" data-target="#TableOfContents" data-offset="80">
     <div class="container-fluid bg-dimmed wrapper">
       <!----- ADD NAVBAR --------------->
       {{ block "navbar" . }} {{ end }}
@@ -45,5 +38,9 @@
 
     <!------- ADD PAGE SPECIFIC SCRIPTS ------>
     {{ block "scripts" . }} {{ end }}
+
+    <!------ IF WANTED, ADD SUPPORT LINKS -------->
+    {{- partial "misc/support.html" . -}}
+
   </body>
 </html>

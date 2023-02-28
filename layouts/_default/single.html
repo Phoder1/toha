@@ -1,14 +1,5 @@
 {{ define "header" }}
 <meta name="description" content="{{ if .Description }}{{ .Description }}{{ else }}{{ .Title }}{{ end }}" />
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css"
-/>
-<link rel="stylesheet" href="{{ "/css/layouts/single.css" | relURL }}"/>
-<link rel="stylesheet" href="{{ "/css/navigators/sidebar.css" | relURL }}">
-<!--================= custom style overrides =========================-->
-<link rel="stylesheet" href="{{ "/css/style.css" | relURL }}"/>
-
 {{ end }}
 
 {{ define "navbar" }}
@@ -20,11 +11,11 @@
     <div class="sidebar-holder">
       <div class="sidebar" id="sidebar">
         <form class="mx-auto" method="get" action="{{ "search" | relLangURL }}">
-          <input type="text" name="keyword" value="" placeholder="Search" data-search="" id="search-box" />
+          <input type="text" name="keyword" value="" placeholder="{{ i18n "search" }}" data-search="" id="search-box" />
         </form>
         <div class="sidebar-tree">
           <ul class="tree" id="tree">
-            <li id="list-heading"><a href="{{ "/posts" | relLangURL }}" data-filter="all">{{ i18n "posts" }}</a></li>
+            <li id="list-heading"><a href="{{ "/posts/" | relLangURL }}" data-filter="all">{{ i18n "posts" }}</a></li>
             <div class="subtree">
                 {{ partial "navigators/sidebar.html" (dict "menuName" "sidebar" "menuItems" site.Menus.sidebar "ctx" .) }}
             </div>
@@ -40,7 +31,7 @@
   <div class="content">
     <div class="container p-0 read-area">
       <!--Hero Area-->
-      <div class="hero-area col-sm-12" id="hero-area" style='background-image: url({{ strings.TrimSuffix "/" site.BaseURL }}{{ partial "helpers/get-hero.html" . }});'>
+      <div class="hero-area col-sm-12" id="hero-area" style='background-image: url({{ partial "helpers/get-hero.html" . }});'>
       </div>
 
       <!--Content Start-->
@@ -54,11 +45,11 @@
         <div class="title">
           <h1>{{ .Page.Title }}</h1>
         </div>
-        {{ if site.Params.enableTags }}
+        {{ if site.Params.features.tags.enable }}
         <div class="taxonomy-terms">
-            <ul>
+          <ul style="padding-left: 0;">
             {{ range .Params.tags }}
-            {{ $url:= printf "tags/%s" . }}
+            {{ $url:= printf "tags/%s/" . }}
             <li class="rounded"><a href="{{ $url | urlize | relLangURL }}" class="btn, btn-sm">{{ . }}</a></li>
             {{ end }}
           </ul>
@@ -136,7 +127,7 @@
           {{ end }}
           <div class="col-md-6 btn-improve-page">
             {{ if ( eq site.Params.GitForge "gitlab" ) }}
-              <a href="{{ site.Params.GitRepo }}/-/edit/{{ .Scratch.Get "GitBranch" }}/{{ .File.Path }}" title="{{ i18n "improve_this_page" }}" target="_blank" rel="noopener">
+              <a href="{{ site.Params.GitRepo }}/-/edit/{{ .Scratch.Get "GitBranch" }}/content/{{ .File.Path }}" title="{{ i18n "improve_this_page" }}" target="_blank" rel="noopener">
             {{ else if ( eq site.Params.GitForge "gitea" ) }}
               <a href="{{ site.Params.GitRepo }}/_edit/{{ .Scratch.Get "GitBranch" }}/content/{{ .File.Path }}" title="{{ i18n "improve_this_page" }}" target="_blank" rel="noopener">
             {{ else }} <!--- Make Github-style the default -->
@@ -157,23 +148,13 @@
       <hr />
 
       <!----- Add comment support  ----->
-      {{ with site.Params.features.comment }}
-        {{ if .enable }}
-          <!-- Add Disqus forum  -->
-          {{ if .disqus.shortName }}
-              {{ partial "disqus.html" . }}
-          <!-- Add valine -->
-          {{ else if .valine }}
-              {{ partial "valine.html" . }}
-          <!-- Add utteranc -->
-          {{ else if .utteranc }}
-              {{ partial "utteranc.html" . }}
-          {{ end }}
-        {{ end }}
+      {{ if site.Params.features.comment.enable }}
+        {{ partial "comments.html" site.Params.features.comment.services }}
       {{ end }}
+
       <!-- Keep backward compatibility with old config.yaml -->
       {{ if site.DisqusShortname }}
-        {{ partial "disqus.html" . }}
+        {{ partial "comments/disqus.html" (dict (slice "disqus" "shortName")  site.DisqusShortname) }}
       {{ end }}
 
       </div>
@@ -189,7 +170,7 @@
 
 {{ define "toc" }}
   <section class="toc-section" id="toc-section">
-    {{ if site.Params.enableTOC }}
+    {{ if and site.Params.features.toc.enable ( .Params.enableTOC | default true ) }}
     <div class="toc-holder">
       <h5 class="text-center pl-3">{{ i18n "toc_heading" }}</h5>
       <hr>
@@ -199,15 +180,4 @@
     </div>
     {{ end }}
   </section>
-{{ end }}
-
-{{ define "scripts" }}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
-<script src="{{ "/js/single.js" | relURL }}"></script>
-<script>
-  hljs.initHighlightingOnLoad();
-</script>
-{{ if .Params.math }}
-    {{ partial "math.html" . }}
-{{ end }}
 {{ end }}
